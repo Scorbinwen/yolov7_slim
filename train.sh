@@ -1,6 +1,6 @@
 ## ========================== train tans ========================== ##
 python train.py --workers 8 --device "0,1,2,3,4,5,6,7" --batch-size 200 \
---resume ./runs/train/train_v7_tans/weights/last.pt \
+--weights weights/yolov7.pt \
 --data data/tans.yaml --img 640 640 \
 --cfg cfg/training/yolov7.yaml \
 --name yolov7 \
