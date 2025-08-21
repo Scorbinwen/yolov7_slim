@@ -87,7 +87,7 @@ def test(data,
         if device.type != 'cpu':
             model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
         task = opt.task if opt.task in ('train', 'val', 'test') else 'val'  # path to train/val/test images
-        dataloader = create_dataloader(data[task], imgsz, batch_size, gs, opt, pad=0.5, rect=True,
+        dataloader = create_dataloader(data[task], imgsz, batch_size, gs, opt, pad=0.5, rect=False,
                                        prefix=colorstr(f'{task}: '))[0]
 
     if v5_metric:
@@ -212,11 +212,25 @@ def test(data,
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
 
         # Plot images
-        if plots and batch_i < 3:
-            f = save_dir / f'test_batch{batch_i}_labels.jpg'  # labels
-            Thread(target=plot_images, args=(img, targets, paths, f, names), daemon=True).start()
-            f = save_dir / f'test_batch{batch_i}_pred.jpg'  # predictions
-            Thread(target=plot_images, args=(img, output_to_target(out), paths, f, names), daemon=True).start()
+        if plots:
+
+            pred_targets = output_to_target(out)
+            for i in range(img.shape[0]):
+                single_img = img[i].unsqueeze(0)
+                single_targets = targets[targets[:, 0] == i]
+                single_targets[:, 0] = 0
+
+                single_pred_targets = pred_targets[pred_targets[:, 0] == i]
+                single_pred_targets[:, 0] = 0
+                single_paths = [""]
+                # print(f"img.shape:{single_img.shape} targets.shape:{single_targets.shape} single_pred_targets.shape:{single_pred_targets.shape}"
+                #       f" single_paths:{len(single_paths)} names:{names}")
+
+                fname, ext = os.path.splitext(os.path.basename(paths[i]))
+                f = save_dir / f'{fname}_labels{ext}'  # labels
+                Thread(target=plot_images, args=(single_img, single_targets, single_paths, f, names), daemon=True).start()
+                f = save_dir / f'{fname}_pred{ext}'  # predictions
+                Thread(target=plot_images, args=(single_img, single_pred_targets, single_paths, f, names), daemon=True).start()
 
     # Compute statistics
     stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
