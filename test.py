@@ -212,7 +212,7 @@ def test(data,
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
 
         # Plot images
-        if plots:
+        if plots    :
 
             pred_targets = output_to_target(out)
             for i in range(img.shape[0]):
